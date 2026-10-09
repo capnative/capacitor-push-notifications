@@ -1,0 +1,37 @@
+{
+  "name": "@capnative/capacitor-push-notifications",
+  "version": "0.0.1",
+  "description": "A Capacitor 8 plugin for handling push notifications using Firebase on iOS and Android.",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/",
+    "ios/Sources",
+    "Package.swift",
+    "CapnativePushNotifications.podspec"
+  ],
+  "keywords": ["capacitor", "plugin", "native", "push", "notifications", "firebase", "fcm"],
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run clean && tsc && rollup -c rollup.config.mjs",
+    "clean": "rm -rf dist",
+    "verify:web": "npm run build"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "rollup": "^4.0.0",
+    "typescript": "~5.9.0"
+  },
+  "peerDependencies": {
+    "@capacitor/core": ">=8.0.0"
+  },
+  "capacitor": {
+    "ios": { "src": "ios" },
+    "android": { "src": "android" }
+  }
+}
