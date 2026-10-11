@@ -1,6 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { PermissionStatus, PushNotificationsPlugin, Token } from './definitions';
+import type { DeliveredNotifications, PermissionStatus, PushNotificationsPlugin, Token } from './definitions';
 
 export class PushNotificationsWeb extends WebPlugin implements PushNotificationsPlugin {
   async checkPermissions(): Promise<PermissionStatus> {
@@ -22,6 +22,15 @@ export class PushNotificationsWeb extends WebPlugin implements PushNotifications
     throw this.unimplemented('Push notifications are not implemented on web.');
   }
   async unsubscribeFromTopic(_options: { topic: string }): Promise<void> {
+    throw this.unimplemented('Push notifications are not implemented on web.');
+  }
+  async getDeliveredNotifications(): Promise<DeliveredNotifications> {
+    throw this.unimplemented('Push notifications are not implemented on web.');
+  }
+  async removeDeliveredNotifications(_delivered: DeliveredNotifications): Promise<void> {
+    throw this.unimplemented('Push notifications are not implemented on web.');
+  }
+  async removeAllDeliveredNotifications(): Promise<void> {
     throw this.unimplemented('Push notifications are not implemented on web.');
   }
 }

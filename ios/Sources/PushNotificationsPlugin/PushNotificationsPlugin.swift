@@ -15,7 +15,10 @@ public class PushNotificationsPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotific
         CAPPluginMethod(name: "unregister", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getToken", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "subscribeToTopic", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "unsubscribeFromTopic", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "unsubscribeFromTopic", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getDeliveredNotifications", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeDeliveredNotifications", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeAllDeliveredNotifications", returnType: CAPPluginReturnPromise)
     ]
 
     override public func load() {
@@ -112,6 +115,34 @@ public class PushNotificationsPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotific
         Messaging.messaging().unsubscribe(fromTopic: topic) { error in
             if let error = error { call.reject(error.localizedDescription) } else { call.resolve() }
         }
+    }
+
+    @objc func getDeliveredNotifications(_ call: CAPPluginCall) {
+        UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+            call.resolve(["notifications": notifications.map { self.payload($0) }])
+        }
+    }
+
+    @objc func removeDeliveredNotifications(_ call: CAPPluginCall) {
+        guard let notifications = call.getArray("notifications") as? [JSObject] else {
+            call.reject("notifications must be an array")
+            return
+        }
+        var identifiers: [String] = []
+        for notification in notifications {
+            guard let identifier = notification["id"] as? String else {
+                call.reject("Each notification must have an id")
+                return
+            }
+            identifiers.append(identifier)
+        }
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+        call.resolve()
+    }
+
+    @objc func removeAllDeliveredNotifications(_ call: CAPPluginCall) {
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        call.resolve()
     }
 
     @objc func didRegisterForRemoteNotifications(_ notification: NSNotification) {

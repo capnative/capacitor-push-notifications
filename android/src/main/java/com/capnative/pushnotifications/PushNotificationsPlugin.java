@@ -1,9 +1,14 @@
 package com.capnative.pushnotifications;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -14,6 +19,7 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
+import org.json.JSONException;
 
 @CapacitorPlugin(
     name = "PushNotifications",
@@ -156,6 +162,89 @@ public class PushNotificationsPlugin extends Plugin {
                 if (task.isSuccessful()) call.resolve();
                 else call.reject("Failed to unsubscribe", task.getException());
             });
+    }
+
+    @PluginMethod
+    public void getDeliveredNotifications(PluginCall call) {
+        NotificationManager notificationManager =
+            (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        JSArray notifications = new JSArray();
+        for (StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
+            Notification nativeNotification = statusBarNotification.getNotification();
+            Bundle extras = nativeNotification.extras;
+            JSObject notification = new JSObject();
+            notification.put("id", String.valueOf(statusBarNotification.getId()));
+            if (statusBarNotification.getTag() != null) {
+                notification.put("tag", statusBarNotification.getTag());
+            }
+            if (extras != null) {
+                CharSequence title = extras.getCharSequence(Notification.EXTRA_TITLE);
+                CharSequence body = extras.getCharSequence(Notification.EXTRA_TEXT);
+                if (title != null) notification.put("title", title.toString());
+                if (body != null) notification.put("body", body.toString());
+            }
+            JSObject data = new JSObject();
+            if (extras != null) {
+                for (String key : extras.keySet()) {
+                    if (key.startsWith("android.") || key.startsWith("androidx.")
+                        || key.startsWith("google.") || key.startsWith("gcm.")
+                        || key.equals("from") || key.equals("collapse_key")
+                        || Notification.EXTRA_TITLE.equals(key) || Notification.EXTRA_TEXT.equals(key)) continue;
+                    Object value = extras.get(key);
+                    if (value instanceof String || value instanceof Number || value instanceof Boolean) {
+                        data.put(key, value);
+                    }
+                }
+            }
+            notification.put("data", data);
+            notifications.put(notification);
+        }
+        JSObject result = new JSObject();
+        result.put("notifications", notifications);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void removeDeliveredNotifications(PluginCall call) {
+        JSArray notifications = call.getArray("notifications");
+        if (notifications == null) {
+            call.reject("notifications must be an array");
+            return;
+        }
+        int count = notifications.length();
+        int[] ids = new int[count];
+        String[] tags = new String[count];
+        try {
+            for (int i = 0; i < count; i++) {
+                JSObject notification = notifications.getJSONObject(i);
+                String id = notification.getString("id");
+                if (id == null) {
+                    call.reject("Each notification must have an id");
+                    return;
+                }
+                ids[i] = Integer.parseInt(id);
+                tags[i] = notification.optString("tag", null);
+            }
+        } catch (JSONException | NumberFormatException e) {
+            call.reject("Each notification must have a valid id", e);
+            return;
+        }
+        NotificationManager notificationManager =
+            (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        for (int i = 0; i < count; i++) {
+            notificationManager.cancel(tags[i], ids[i]);
+        }
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void removeAllDeliveredNotifications(PluginCall call) {
+        NotificationManager notificationManager =
+            (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        for (StatusBarNotification notification : notificationManager.getActiveNotifications()) {
+            notificationManager.cancel(notification.getTag(), notification.getId());
+        }
+        call.resolve();
     }
 
     public static void onNewToken(String token) {

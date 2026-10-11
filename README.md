@@ -29,4 +29,6 @@ if ((await PushNotifications.requestPermissions()).receive === 'granted') {
 }
 ```
 
-API: `checkPermissions`, `requestPermissions`, `register`, `unregister`, `getToken`, `subscribeToTopic`, `unsubscribeFromTopic`, and the events `registration`, `registrationError`, `pushNotificationReceived`, `pushNotificationActionPerformed`.
+API: `checkPermissions`, `requestPermissions`, `register`, `unregister`, `getToken`, `subscribeToTopic`, `unsubscribeFromTopic`, `getDeliveredNotifications`, `removeDeliveredNotifications`, `removeAllDeliveredNotifications`, and the events `registration`, `registrationError`, `pushNotificationReceived`, `pushNotificationActionPerformed`.
+
+`getDeliveredNotifications()` returns `{ notifications: [...] }`. Pass that object, or a subset of its notifications, to `removeDeliveredNotifications({ notifications })` to remove selected notifications. Use `removeAllDeliveredNotifications()` to clear all currently delivered notifications.
