@@ -20,6 +20,7 @@ import com.getcapacitor.annotation.PermissionCallback;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 @CapacitorPlugin(
     name = "PushNotifications",
@@ -216,7 +217,7 @@ public class PushNotificationsPlugin extends Plugin {
         String[] tags = new String[count];
         try {
             for (int i = 0; i < count; i++) {
-                JSObject notification = notifications.getJSONObject(i);
+                JSONObject notification = notifications.getJSONObject(i);
                 String id = notification.getString("id");
                 if (id == null) {
                     call.reject("Each notification must have an id");
