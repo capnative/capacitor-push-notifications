@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "CapnativePushNotifications",
+    name: "CapnativeCapacitorPushNotifications",
     platforms: [.iOS(.v15)],
     products: [
-        .library(name: "CapnativePushNotifications", targets: ["PushNotificationsPlugin"])
+        .library(name: "CapnativeCapacitorPushNotifications", targets: ["PushNotificationsPlugin"])
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
