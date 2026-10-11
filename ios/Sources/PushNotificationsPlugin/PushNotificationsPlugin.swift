@@ -142,6 +142,13 @@ public class PushNotificationsPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotific
 
     @objc func removeAllDeliveredNotifications(_ call: CAPPluginCall) {
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        DispatchQueue.main.async {
+            if #available(iOS 16.0, *) {
+                UNUserNotificationCenter.current().setBadgeCount(0)
+            } else {
+                UIApplication.shared.applicationIconBadgeNumber = 0
+            }
+        }
         call.resolve()
     }
 
